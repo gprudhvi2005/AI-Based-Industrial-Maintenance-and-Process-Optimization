@@ -63,8 +63,8 @@ print(results_df.sort_values(by='Failure Risk (%)', ascending=False).head(10).to
 # ==========================================
 # 7. ADDITION: Save Trained Model Artifacts
 # ==========================================
-joblib.dump(model, 'Milestone_1/logistic_regression_model.pkl')
-print("\n[SUCCESS] Saved model to 'Milestone_1/logistic_regression_model.pkl'")
+joblib.dump(model, 'Milestone_2/logistic_regression_model.pkl')
+print("\n[SUCCESS] Saved model to 'Milestone_2/logistic_regression_model.pkl'")
 
 # ==========================================
 # 8. ADDITION: Feature Importance (Odds Ratios)
@@ -90,6 +90,6 @@ plt.legend()
 plt.tight_layout()
 
 # Save plot asset for project documentation
-plt.savefig('Milestone_1/feature_importance.png')
-print("[SUCCESS] Saved plot to 'Milestone_1/feature_importance.png'")
+plt.savefig('Milestone_2/feature_importance.png')
+print("[SUCCESS] Saved plot to 'Milestone_2/feature_importance.png'")
 plt.show()

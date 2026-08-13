@@ -163,18 +163,7 @@ Milestone 2 (Classical ML)   Milestone 3 (Advanced ML)
 
 ---
 
-## 👥 Team
 
-| Member | Contribution |
-|---|---|
-| P1 | Data Preprocessing & EDA |
-| P2 | Logistic Regression Model |
-| P3 | SVM Model |
-| P4 | Decision Tree Model |
-| P5 | Ensemble Models (RF + GB + SHAP) |
-| P6 | ANN & Final Integration |
-
----
 
 ## ▶️ How to Run
 
@@ -199,4 +188,4 @@ python generate_ppt.py
 
 ---
 
-*Infosys Internship Project — AI4I 2020 Predictive Maintenance Dataset*
+*Infosys Springboard Internship  — AI4I 2020 Predictive Maintenance Dataset*

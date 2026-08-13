@@ -21,7 +21,8 @@ from sklearn.metrics import (
     average_precision_score,
     f1_score,
     recall_score,
-    precision_score
+    precision_score,
+    accuracy_score
 )
 
 # Explainability
@@ -96,20 +97,22 @@ plt.figure(figsize=(9, 6))
 for name, model in best_models.items():
     y_pred = model.predict(X_test)
     y_proba = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else model.decision_function(X_test)
-    
+
+    acc  = accuracy_score(y_test, y_pred)
     prec = precision_score(y_test, y_pred)
-    rec = recall_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred)
+    rec  = recall_score(y_test, y_pred)
+    f1   = f1_score(y_test, y_pred)
     roc_auc = roc_auc_score(y_test, y_proba)
-    pr_auc = average_precision_score(y_test, y_proba)
-    
+    pr_auc  = average_precision_score(y_test, y_proba)
+
     results.append({
-        "Model": name,
+        "Model":     name,
+        "Accuracy":  round(acc, 4),
         "Precision": round(prec, 4),
-        "Recall": round(rec, 4),
-        "F1-Score": round(f1, 4),
-        "ROC-AUC": round(roc_auc, 4),
-        "PR-AUC": round(pr_auc, 4)
+        "Recall":    round(rec, 4),
+        "F1-Score":  round(f1, 4),
+        "ROC-AUC":   round(roc_auc, 4),
+        "PR-AUC":    round(pr_auc, 4)
     })
     
     fpr, tpr, _ = roc_curve(y_test, y_proba)

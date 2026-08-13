@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, average_precision_score
 
 # ==========================================
 # 1. Load Preprocessed Datasets
@@ -37,6 +37,7 @@ print(classification_report(y_test, y_pred, zero_division=0))
 # ROC-AUC score requires both classes (0 and 1) in y_test
 if len(np.unique(y_test)) > 1:
     print(f"ROC-AUC Score: {roc_auc_score(y_test, y_proba):.4f}")
+    print(f"PR-AUC Score : {average_precision_score(y_test, y_proba):.4f}")
 
 # ==========================================
 # 5. Evaluate with Custom Threshold (0.30)

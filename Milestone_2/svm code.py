@@ -1,178 +1,101 @@
-
 # ==========================================
 # AI-Based Predictive Maintenance using SVM
+# Data Source: Milestone_1 preprocessed CSVs
 # ==========================================
 
-# Import Libraries
+import numpy as np
 import pandas as pd
+import joblib
 import matplotlib.pyplot as plt
-from google.colab import files
-
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, ConfusionMatrixDisplay
-
-# -----------------------------------
-# Upload Dataset
-# -----------------------------------
-print("Upload your AI4I dataset (.csv)")
-uploaded = files.upload()
-
-# Get uploaded filename automatically
-filename = list(uploaded.keys())[0]
-
-# Load Dataset
-data = pd.read_csv(filename)
-
-print("\nDataset Loaded Successfully!")
-print(data.head())
-
-print("\nDataset Information")
-print(data.info())
-
-print("\nSummary Statistics")
-print(data.describe())
-
-# -----------------------------------
-# Remove unnecessary columns
-# -----------------------------------
-data.drop(columns=['UDI', 'Product ID'], inplace=True)
-
-# -----------------------------------
-# Convert Machine Type into Numbers
-# -----------------------------------
-encoder = LabelEncoder()
-data['Type'] = encoder.fit_transform(data['Type'])
-
-# -----------------------------------
-# Features and Target
-# -----------------------------------
-X = data[['Type',
-          'Air temperature [K]',
-          'Process temperature [K]',
-          'Rotational speed [rpm]',
-          'Torque [Nm]',
-          'Tool wear [min]']]
-
-y = data['Machine failure']
-
-# -----------------------------------
-# Split Dataset
-# -----------------------------------
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.20,
-    random_state=42,
-    stratify=y
+from sklearn.metrics import (
+    accuracy_score, confusion_matrix, classification_report,
+    ConfusionMatrixDisplay, roc_auc_score, average_precision_score
 )
 
-# -----------------------------------
-# Feature Scaling
-# -----------------------------------
-scaler = StandardScaler()
+# ==========================================
+# 1. Load Preprocessed Datasets (Milestone_1)
+# ==========================================
+print("Loading preprocessed data from Milestone_1...")
+X_train = pd.read_csv('Milestone_1/X_train_scaled.csv')
+X_test  = pd.read_csv('Milestone_1/X_test_scaled.csv')
+y_train = pd.read_csv('Milestone_1/y_train.csv').values.ravel()
+y_test  = pd.read_csv('Milestone_1/y_test.csv').values.ravel()
 
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
+print(f"Train shape: {X_train.shape}, Test shape: {X_test.shape}")
+print(f"Class distribution in y_train: {dict(zip(*np.unique(y_train, return_counts=True)))}")
 
-# -----------------------------------
-# Train SVM Model
-# -----------------------------------
-svm = SVC(kernel='rbf', C=1.0, gamma='scale')
-
+# ==========================================
+# 2. Train SVM Model (RBF Kernel)
+# ==========================================
+print("\nTraining SVM model (RBF kernel)...")
+svm = SVC(kernel='rbf', C=1.0, gamma='scale', class_weight='balanced',
+          probability=True, random_state=42)
 svm.fit(X_train, y_train)
+print("SVM Model Trained Successfully!")
 
-print("\nSVM Model Trained Successfully!")
+# ==========================================
+# 3. Predictions
+# ==========================================
+y_pred  = svm.predict(X_test)
+y_proba = svm.predict_proba(X_test)[:, 1]
 
-# -----------------------------------
-# Prediction
-# -----------------------------------
-y_pred = svm.predict(X_test)
-
-# -----------------------------------
-# Accuracy
-# -----------------------------------
+# ==========================================
+# 4. Evaluation Metrics
+# ==========================================
 accuracy = accuracy_score(y_test, y_pred)
+print(f"\nAccuracy: {accuracy:.4f}")
 
-print("\nAccuracy :", accuracy)
+if len(np.unique(y_test)) > 1:
+    print(f"ROC-AUC Score: {roc_auc_score(y_test, y_proba):.4f}")
+    print(f"PR-AUC Score : {average_precision_score(y_test, y_proba):.4f}")
 
-# -----------------------------------
-# Confusion Matrix
-# -----------------------------------
+print("\n=== Confusion Matrix ===")
 cm = confusion_matrix(y_test, y_pred)
-
-print("\nConfusion Matrix")
 print(cm)
 
+print("\n=== Classification Report ===")
+print(classification_report(y_test, y_pred, zero_division=0))
+
+# ==========================================
+# 5. Confusion Matrix Plot
+# ==========================================
 disp = ConfusionMatrixDisplay(confusion_matrix=cm)
 disp.plot(cmap='Blues')
-plt.title("Confusion Matrix")
+plt.title("SVM - Confusion Matrix")
+plt.tight_layout()
+plt.savefig('Milestone_2/svm_confusion_matrix.png', dpi=150)
+print("[SUCCESS] Saved confusion matrix to 'Milestone_2/svm_confusion_matrix.png'")
 plt.show()
 
-# -----------------------------------
-# Classification Report
-# -----------------------------------
-print("\nClassification Report")
-print(classification_report(y_test, y_pred))
-
-# -----------------------------------
-# Visualization
-# -----------------------------------
-plt.figure(figsize=(8,6))
-
-plt.scatter(
-    data['Air temperature [K]'],
-    data['Process temperature [K]'],
-    c=data['Machine failure'],
-    cmap='coolwarm'
-)
-
-plt.xlabel("Air Temperature (K)")
-plt.ylabel("Process Temperature (K)")
-plt.title("Machine Failure Distribution")
+# ==========================================
+# 6. Scatter Visualization (Air Temp vs Process Temp)
+# ==========================================
+plt.figure(figsize=(8, 6))
+plt.scatter(X_test['Air temperature'], X_test['Process temperature'],
+            c=y_test, cmap='coolwarm', alpha=0.6)
+plt.xlabel("Air Temperature (Scaled)")
+plt.ylabel("Process Temperature (Scaled)")
+plt.title("SVM — Machine Failure Distribution on Test Set")
 plt.colorbar(label="Machine Failure")
+plt.tight_layout()
+plt.savefig('Milestone_2/svm_scatter.png', dpi=150)
+print("[SUCCESS] Saved scatter plot to 'Milestone_2/svm_scatter.png'")
 plt.show()
 
-# -----------------------------------
-# Predict New Machine
-# -----------------------------------
-print("\nPredict New Machine")
+# ==========================================
+# 7. Top 10 Highest Risk Predictions
+# ==========================================
+results_df = pd.DataFrame({
+    'Actual Label':    y_test,
+    'Predicted Label': y_pred,
+    'Failure Risk (%)': np.round(y_proba * 100, 2)
+})
+print("\n=== Top 10 Highest Risk Predictions ===")
+print(results_df.sort_values(by='Failure Risk (%)', ascending=False).head(10).to_string(index=False))
 
-print("Machine Type:")
-print("L = Low")
-print("M = Medium")
-print("H = High")
-
-machine_type = input("Enter Machine Type (L/M/H): ").upper()
-
-type_dict = {
-    'L':0,
-    'M':1,
-    'H':2
-}
-
-air_temp = float(input("Air Temperature (K): "))
-process_temp = float(input("Process Temperature (K): "))
-rpm = float(input("Rotational Speed (rpm): "))
-torque = float(input("Torque (Nm): "))
-tool_wear = float(input("Tool Wear (min): "))
-
-new_data = [[
-    type_dict[machine_type],
-    air_temp,
-    process_temp,
-    rpm,
-    torque,
-    tool_wear
-]]
-
-new_data = scaler.transform(new_data)
-
-prediction = svm.predict(new_data)
-
-if prediction[0] == 0:
-    print("\nPrediction: Healthy Machine")
-else:
-    print("\nPrediction: Machine Failure")
-
+# ==========================================
+# 8. Save Trained Model
+# ==========================================
+joblib.dump(svm, 'Milestone_2/svm_model.pkl')
+print("\n[SUCCESS] Saved model to 'Milestone_2/svm_model.pkl'")

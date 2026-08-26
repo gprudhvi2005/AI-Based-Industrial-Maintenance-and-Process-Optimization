@@ -1,4 +1,4 @@
-# COTRIX — Updated All-Models Dashboard
+# WELCOME TO COTRIX 
 
 This version updates the COTRIX dashboard to show and run **7 predictive-maintenance models** from the supplied project:
 

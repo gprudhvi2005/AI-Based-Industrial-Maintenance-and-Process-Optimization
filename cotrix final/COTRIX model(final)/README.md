@@ -1,6 +1,6 @@
 # WELCOME TO COTRIX 
 
-This version updates the COTRIX dashboard to show and run **7 predictive-maintenance models** from the supplied project:
+This COTRIX dashboard show and run **7 predictive-maintenance models** from the supplied project:
 
 1. Logistic Regression
 2. SVM

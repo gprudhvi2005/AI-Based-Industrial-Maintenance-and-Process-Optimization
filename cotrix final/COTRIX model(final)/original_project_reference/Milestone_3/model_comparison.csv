@@ -1,0 +1,3 @@
+Model,Accuracy,Precision,Recall,F1-Score,ROC-AUC,PR-AUC
+Random Forest,0.972,0.5638,0.7794,0.6543,0.9763,0.7988
+Gradient Boosting,0.976,0.6087,0.8235,0.7,0.9661,0.8158
